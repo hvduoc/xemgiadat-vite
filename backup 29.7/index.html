@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xem Giá Đất - Vite + MapLibre + PMTiles</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+      html, body, #map { margin: 0; padding: 0; height: 100%; width: 100%; }
+      .dimension-label {
+        background: white;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 11px;
+        border: 1px solid #888;
+        white-space: nowrap;
+      }
+
+      .length-label {
+        pointer-events: none;
+        position: absolute;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,0.8);
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="map" style="position:absolute; top:0; left:0; right:0; bottom:0;"></div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
