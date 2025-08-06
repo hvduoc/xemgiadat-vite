@@ -1,5 +1,9 @@
 
+// Import thư viện JavaScript của MapLibre
 import maplibregl from 'maplibre-gl';
+
+// QUAN TRỌNG: Import cả file CSS để bản đồ hiển thị đúng
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { PMTiles, Protocol } from 'pmtiles';
 import * as turf from "@turf/turf";
 
