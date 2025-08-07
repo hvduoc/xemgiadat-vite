@@ -64,9 +64,9 @@ map.on("load", () => {
     // A. THÊM CÁC NGUỒN DỮ LIỆU (SOURCES)
     map.addSource('stadia-source', {
         type: 'raster',
-        tiles: [`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaApiKey}`],
+        tiles: [`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png?api_key=${stadiaApiKey}`],
         tileSize: 256,
-        attribution: '&copy; Stadia Maps'
+        attribution: '&copy; Stadia Maps, OpenMapTiles, OpenStreetMap'
     });
     map.addSource('satellite-source', {
         type: 'raster',
