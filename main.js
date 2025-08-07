@@ -137,7 +137,7 @@ map.on("click", async (e) => {
     map.getSource("highlight").setData(foundThua);
 
     const line = turf.polygonToLine(foundThua);
-    const coords = line.geometry.coordinates[0];
+    const coords = line.geometry.coordinates;
     coords.forEach((c, i) => {
         if (i === coords.length - 1) return;
         const p1 = c;
