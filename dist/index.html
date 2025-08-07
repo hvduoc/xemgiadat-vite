@@ -35,14 +35,56 @@
         border-radius: 6px;
         line-height: 1.6;
       }
+      /* === DÁN ĐOẠN NÀY VÀO CUỐI FILE style.css === */
+
+      #basemap-switcher {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          z-index: 1;
+          background-color: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(5px);
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          display: flex;
+          overflow: hidden;
+      }
+
+      #basemap-switcher button {
+          padding: 8px 12px;
+          border: none;
+          background-color: transparent;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background-color 0.2s;
+          border-right: 1px solid #ddd;
+      }
+
+      #basemap-switcher button:last-child {
+          border-right: none;
+      }
+
+      #basemap-switcher button:hover {
+          background-color: #f0f0f0;
+      }
+
+      #basemap-switcher button.active {
+          background-color: #3b82f6; /* Màu xanh khi được chọn */
+          color: white;
+      }
 
 
     </style>
-    <script type="module" crossorigin src="./assets/index-1d6f3e35.js"></script>
+    <script type="module" crossorigin src="./assets/index-ba1c263c.js"></script>
     <link rel="stylesheet" href="./assets/index-32659722.css">
   </head>
   <body>
     <div id="map" style="position:absolute; top:0; left:0; right:0; bottom:0;"></div>
+    <div id="basemap-switcher">
+        <button data-style="stadia" class="active">Bản đồ Đường</button>
+        <button data-style="satellite">Ảnh Vệ tinh</button>
+    </div>
     <div id="info-panel" style="padding: 10px; font-size: 14px; background: #f1f5f9; border-top: 1px solid #ccc;">
       <h3>Thông tin thửa đất</h3>
       <div id="parcel-info">Hãy click vào một thửa đất để xem chi tiết.</div>
