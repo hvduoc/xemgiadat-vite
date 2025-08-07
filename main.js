@@ -13,6 +13,7 @@ let labelElements = []; // Mảng chứa các nhãn kích thước
 
 // 3. CÀI ĐẶT CÁC THÔNG SỐ VÀ KHỞI TẠO BẢN ĐỒ
 const stadiaApiKey = '226d621e-003f-4982-bad0-5e2ca49617fd'; // <-- THAY THẾ BẰNG KEY THẬT CỦA BẠN
+const retinaModifier = window.devicePixelRatio > 1 ? '@2x' : '';
 const protocol = new Protocol();
 maplibregl.addProtocol("pmtiles", protocol.tile);
 
@@ -64,8 +65,9 @@ map.on("load", () => {
     // A. THÊM CÁC NGUỒN DỮ LIỆU (SOURCES)
     map.addSource('stadia-source', {
         type: 'raster',
-        tiles: [`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png?api_key=${stadiaApiKey}`],
-        tileSize: 256,
+        tiles: [`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}${retinaModifier}.png?api_key=${stadiaApiKey}`],
+        // Báo cho map biết kích thước tile tương ứng
+        tileSize: window.devicePixelRatio > 1 ? 512 : 256, 
         attribution: '&copy; Stadia Maps, OpenMapTiles, OpenStreetMap'
     });
     map.addSource('satellite-source', {
@@ -153,7 +155,7 @@ map.on("click", async (e) => {
         el.style.fontSize = "10px";
         el.style.borderRadius = "2px";
         el.style.pointerEvents = "none";
-        el.innerText = `${length.toFixed(1)}m`;
+        el.innerText = `${length.toFixed(1)}`;
         document.body.appendChild(el);
         labelElements.push({ el, lngLat: mid });
     });
