@@ -1,4 +1,4 @@
-// === FILE MAIN.JS HOÀN CHỈNH ===
+// === FILE MAIN.JS HOÀN CHỈNH (ĐÃ KẾT HỢP ĐẦY ĐỦ TÍNH NĂNG) ===
 
 // 1. IMPORT CÁC THƯ VIỆN CẦN THIẾT
 import maplibregl from 'maplibre-gl';
@@ -27,7 +27,7 @@ const map = new maplibregl.Map({
     zoom: 14
 });
 
-// 4. HÀM TẢI DỮ LIỆU RANH GIỚI HÀNH CHÍNH
+// 4. HÀM TẢI DỮ LIỆU RANH GIỚI HÀNH CHÍNH (TỪ CODE CŨ CỦA BẠN)
 async function loadRanhGioi() {
     try {
         const res = await fetch("/ranhgioi.geojson");
@@ -40,12 +40,11 @@ async function loadRanhGioi() {
 }
 loadRanhGioi(); // Tải ngay từ đầu
 
-// 5. CÁC HÀM TIỆN ÍCH (Lấy từ code cũ của bạn)
+// 5. CÁC HÀM TIỆN ÍCH (TỪ CODE CŨ CỦA BẠN)
 function clearPreviousHighlight() {
-    if (map.getLayer("highlight-fill")) map.removeLayer("highlight-fill");
-    if (map.getLayer("highlight-line")) map.removeLayer("highlight-line");
-    if (map.getSource("highlight")) map.removeSource("highlight");
-
+    if (map.getSource("highlight")) {
+        map.getSource("highlight").setData({ type: 'FeatureCollection', features: [] });
+    }
     document.querySelectorAll(".length-label").forEach((el) => el.remove());
     labelElements = [];
     map.off("move", updateLabelPositions);
@@ -63,56 +62,50 @@ function updateLabelPositions() {
 // 6. XỬ LÝ SỰ KIỆN KHI BẢN ĐỒ ĐÃ TẢI XONG
 map.on("load", () => {
     // A. THÊM CÁC NGUỒN DỮ LIỆU (SOURCES)
-    // Nguồn cho nền Stadia
     map.addSource('stadia-source', {
         type: 'raster',
         tiles: [`https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaApiKey}`],
         tileSize: 256,
-        attribution: '&copy; Stadia Maps, OpenMapTiles, OpenStreetMap'
+        attribution: '&copy; Stadia Maps'
     });
-    // Nguồn cho nền Vệ tinh
     map.addSource('satellite-source', {
         type: 'raster',
         tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
         tileSize: 256,
-        attribution: '&copy; Esri, i-cubed, USDA, USGS, AEX, GeoEye...'
+        attribution: '&copy; Esri'
     });
-    // Nguồn dữ liệu vector tile phân lô của bạn
     map.addSource("parcels-pmtiles", {
         type: "vector",
-        url: "pmtiles://tiles/danang_parcels_final.pmtiles"
+        url: "pmtiles://tiles/danang_parcels_final.pmtiles",
+        attribution: 'Dữ liệu phân lô tham khảo từ Sở TNMT Đà Nẵng'
     });
-    // Nguồn trống để highlight thửa đất
     map.addSource("highlight", { type: "geojson", data: null });
 
     // B. THÊM CÁC LỚP HIỂN THỊ (LAYERS)
-    // Lớp nền Stadia (ẩn đi lúc đầu)
     map.addLayer({
         id: 'stadia-layer',
         type: 'raster',
         source: 'stadia-source',
-        layout: { visibility: 'none' }
+        layout: { visibility: 'none' } // Ẩn đi lúc đầu
     });
-    // Lớp nền Vệ tinh (ẩn đi lúc đầu)
     map.addLayer({
         id: 'satellite-layer',
         type: 'raster',
         source: 'satellite-source',
-        layout: { visibility: 'none' }
+        layout: { visibility: 'none' } // Ẩn đi lúc đầu
     });
-    // Lớp hiển thị đường viền thửa đất (luôn hiển thị)
+    // Lớp phân lô của bạn sẽ luôn hiển thị ở trên cùng
     map.addLayer({
         id: "parcel-boundaries",
         type: "line",
         source: "parcels-pmtiles",
         "source-layer": "danang_full",
-        paint: { "line-color": "#6B7280", "line-width": 1 }
+        paint: { "line-color": "#888", "line-width": 1 }
     });
     // Các lớp để highlight
     map.addLayer({ id: "highlight-fill", type: "fill", source: "highlight", paint: { "fill-color": "#3b82f6", "fill-opacity": 0.3 } });
     map.addLayer({ id: "highlight-line", type: "line", source: "highlight", paint: { "line-color": "#1d4ed8", "line-width": 2 } });
 });
-
 
 // 7. GIỮ NGUYÊN TOÀN BỘ LOGIC CLICK CỐT LÕI CỦA BẠN
 map.on("click", async (e) => {
@@ -122,14 +115,8 @@ map.on("click", async (e) => {
     const { lng, lat } = e.lngLat;
     const point = turf.point([lng, lat]);
 
-    let foundXa = null;
-    for (const xa of ranhGioiFeatures) {
-        if (turf.booleanPointInPolygon(point, xa)) {
-            foundXa = xa;
-            break;
-        }
-    }
-    if (!foundXa) { return; } // Không alert để đỡ phiền
+    let foundXa = ranhGioiFeatures.find(xa => turf.booleanPointInPolygon(point, xa));
+    if (!foundXa) { return; }
 
     const maXa = foundXa.properties.MaXa;
     if (!loadedGeojson[maXa]) {
@@ -151,14 +138,13 @@ map.on("click", async (e) => {
 
     const line = turf.polygonToLine(foundThua);
     const coords = line.geometry.coordinates[0];
-    const labels = [];
     coords.forEach((c, i) => {
         if (i === coords.length - 1) return;
         const p1 = c;
         const p2 = coords[i + 1];
         const length = turf.length(turf.lineString([p1, p2]), { units: "meters" });
-        if (length < 1) return; // Bỏ qua các cạnh quá nhỏ
-        const mid = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+        if (length < 1) return;
+        const mid = turf.midpoint(p1, p2).geometry.coordinates;
         const el = document.createElement("div");
         el.className = "length-label";
         el.style.position = "absolute";
@@ -169,12 +155,11 @@ map.on("click", async (e) => {
         el.style.pointerEvents = "none";
         el.innerText = `${length.toFixed(1)}m`;
         document.body.appendChild(el);
-        labels.push({ el, lngLat: mid });
+        labelElements.push({ el, lngLat: mid });
     });
-    labelElements = labels;
-    updateLabelPositions();
     map.on("move", updateLabelPositions);
     map.on("zoom", updateLabelPositions);
+    updateLabelPositions();
 
     const props = foundThua.properties;
     const infoDiv = document.getElementById("parcel-info");
@@ -189,13 +174,6 @@ map.on("click", async (e) => {
     `;
 });
 
-// Thêm hiệu ứng con trỏ
-map.on('mousemove', (e) => {
-    const features = map.queryRenderedFeatures(e.point, { layers: ['parcel-boundaries'] });
-    map.getCanvas().style.cursor = features.length ? 'pointer' : '';
-});
-
-
 // 8. LOGIC CHO BỘ ĐIỀU KHIỂN CHỌN BẢN ĐỒ NỀN
 const switcher = document.getElementById('basemap-switcher');
 const buttons = switcher.querySelectorAll('button');
@@ -206,7 +184,6 @@ buttons.forEach(button => {
         buttons.forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
 
-        // Dùng setLayoutProperty để bật/tắt các lớp nền
         if (styleId === 'custom') {
             map.setLayoutProperty('stadia-layer', 'visibility', 'none');
             map.setLayoutProperty('satellite-layer', 'visibility', 'none');
